@@ -31,7 +31,7 @@ CREATE TABLE `role_user`  (
 -- ----------------------------
 -- Table structure for sys_user1
 -- ----------------------------
-DROP TABLE IF EXISTS `sys_user1`;
+DROP TABLE IF EXISTS `sys_user0`;
 CREATE TABLE `sys_user1`  (
   `id` int(32) NOT NULL,
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
@@ -41,7 +41,7 @@ CREATE TABLE `sys_user1`  (
 -- ----------------------------
 -- Table structure for sys_user2
 -- ----------------------------
-DROP TABLE IF EXISTS `sys_user2`;
+DROP TABLE IF EXISTS `sys_user1`;
 CREATE TABLE `sys_user2`  (
   `id` int(32) NOT NULL,
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
@@ -51,7 +51,7 @@ CREATE TABLE `sys_user2`  (
 -- ----------------------------
 -- Table structure for sys_user3
 -- ----------------------------
-DROP TABLE IF EXISTS `sys_user3`;
+DROP TABLE IF EXISTS `sys_user2`;
 CREATE TABLE `sys_user3`  (
   `id` int(32) NOT NULL,
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',

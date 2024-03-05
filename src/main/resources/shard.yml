@@ -9,7 +9,7 @@ spring:
             # 配置文件中引用自定义分片策略
             standard:
               shardingColumn: create_time
-              preciseAlgorithmClassName: com.example.order.PreciseShardingByYearAlgorithm
+              preciseAlgorithmClassName: com.study.shardingjdbc.shard.PreciseShardingByYearAlgorithm
             # 配置文件中引用取模分片策略
             inline:
               shardingColumn: user_id
@@ -17,4 +17,4 @@ spring:
             # 在配置文件中引用自定义复合分片策略
             complex:
               shardingColumns: user_id, order_id
-              algorithmClassName: com.example.order.ComplexShardingAlgorithm
+              algorithmClassName: com.study.shardingjdbc.shard.ComplexShardingAlgorithm

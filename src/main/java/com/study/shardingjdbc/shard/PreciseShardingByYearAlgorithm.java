@@ -9,19 +9,9 @@ import java.util.Date;
 
 
 /**
- * 标准分片策略允许您根据某个字段的具体值范围来分割数据。例如，您可以将数据按照时间范围进行分表，每个表代表一段时间的数据。
- * 自定义精确分片策略
- * -- 配置文件中引用策略
- * spring:
- *   shardingsphere:
- *     sharding:
- *       tables:
- *         order:
- *           actualDataNodes: ds${0..1}.order_${201901..201912}
- *           tableStrategy:
- *             standard:
- *               shardingColumn: create_time
- *               preciseAlgorithmClassName: com.example.order.PreciseShardingByYearAlgorithm
+ * 自定义精确分片策略/标准分片策略
+ * 允许您根据某个字段的具体值范围来分割数据。
+ * 例如，您可以将数据按照时间范围进行分表，每个表代表一段时间的数据。
  */
 public class PreciseShardingByYearAlgorithm implements PreciseShardingAlgorithm<Date> {
 
