@@ -38,16 +38,21 @@ spring:
                 # sys_user逻辑表名
                 sys_user:
                     # 数据节点：数据源$ ->{0..N}.逻辑表名$->{0..N}
+                    # 数据节点配置，采用Groovy表达式，切分之后的真实表所在的节点
                     actual-data-nodes: ds$->{0..1}.sys_user$->{1..3}
                     # 拆分库策略，也就是什么样子的数据放到哪个数据库中
                     database-strategy:
                         inline:
+                            # 分片键为ID
                             sharding-column: id
+                            # 分片策略取模
                             algorithm-expression: ds$->{id % 2}
                     #拆表策略
                     table-strategy:
                         inline:
+                            # 分片键为ID
                             sharding-column: id
+                            # 分片策略取模
                             algorithm-expression: sys_user$->{id % 3}
                 t_role: #单库单表
                     actualDataNodes: ds0.t_role

@@ -1,0 +1,20 @@
+
+spring:
+  shardingsphere:
+    sharding:
+      tables:
+        order:
+          actualDataNodes: ds${0..1}.order_${201901..201912}
+          tableStrategy:
+            # 配置文件中引用自定义分片策略
+            standard:
+              shardingColumn: create_time
+              preciseAlgorithmClassName: com.example.order.PreciseShardingByYearAlgorithm
+            # 配置文件中引用取模分片策略
+            inline:
+              shardingColumn: user_id
+              algorithmExpression: user_${user_id % 10}
+            # 在配置文件中引用自定义复合分片策略
+            complex:
+              shardingColumns: user_id, order_id
+              algorithmClassName: com.example.order.ComplexShardingAlgorithm
