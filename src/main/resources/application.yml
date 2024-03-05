@@ -1,0 +1,19 @@
+#服务端口
+server:
+    port: 8085
+
+spring:
+    main:
+        allow-bean-definition-overriding: true
+    profiles:
+        active: spd
+
+# 配置mybatis
+mybatis:
+    # 搜索指定包别名
+    typeAliasesPackage: com.study.shardingjdbc
+    # 配置mapper的扫描，找到所有的mapper.xml映射文件
+    #mapperLocations: classpath*:mapper/**/*Mapper.xml
+    mapper-locations: classpath*:com/study/shardingjdbc/mapper/*.xml
+    type-aliases-package: com.study
+

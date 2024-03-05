@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.shardingjdbc.dao.RoleUserDao">
+
+
+
+
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.study.shardingjdbc.entity.RoleUser" useGeneratedKeys="true">
+        insert into role_user (role_id,user_id)
+        values (#{roleId},#{userId})
+    </insert>
+
+    <select id="selectByRoleId" parameterType="integer" resultType="com.study.shardingjdbc.entity.SysUser">
+        SELECT
+            s.*
+        FROM
+            role_user r
+                INNER JOIN sys_user s ON r.user_id = s.id
+        WHERE
+            role_id = #{roleId}
+    </select>
+
+    <delete id="deleteByRoleId" parameterType="integer">
+        DELETE
+        FROM
+            role_user
+        WHERE
+            role_id = #{roleId}
+    </delete>
+</mapper>
