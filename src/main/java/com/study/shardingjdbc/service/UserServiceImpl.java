@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void insert(SysUser sysUser) {
-        for (int i = 1; i < 11; i++) {
+        for (int i = 11; i < 21; i++) {
             SysUser user = new SysUser();
             user.setId(i);
             user.setName("测试" + i);

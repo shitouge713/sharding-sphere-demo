@@ -1,11 +1,11 @@
 package com.study.shardingjdbc.shard;
 
 import cn.hutool.extra.spring.SpringUtil;
-import io.shardingsphere.api.algorithm.sharding.PreciseShardingValue;
-import io.shardingsphere.api.algorithm.sharding.RangeShardingValue;
-import io.shardingsphere.api.algorithm.sharding.standard.PreciseShardingAlgorithm;
-import io.shardingsphere.api.algorithm.sharding.standard.RangeShardingAlgorithm;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.shardingsphere.api.sharding.standard.PreciseShardingAlgorithm;
+import org.apache.shardingsphere.api.sharding.standard.PreciseShardingValue;
+import org.apache.shardingsphere.api.sharding.standard.RangeShardingAlgorithm;
+import org.apache.shardingsphere.api.sharding.standard.RangeShardingValue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +26,8 @@ public class ConsistenceHashAlgorithm implements RangeShardingAlgorithm<Long>, P
      */
     @Override
     public String doSharding(Collection collection, PreciseShardingValue preciseShardingValue) {
-        System.out.println(collection);
+        System.out.println("doSharding1 ~ collection:" + collection);
+        //获取hash环
         InitTableNodesToHashLoop initTableNodesToHashLoop = SpringUtil.getBean(InitTableNodesToHashLoop.class);
         if (CollectionUtils.isEmpty(collection)) {
             return preciseShardingValue.getLogicTableName();
@@ -36,11 +37,8 @@ public class ConsistenceHashAlgorithm implements RangeShardingAlgorithm<Long>, P
         //但availableTargetNames中确是副表名称，所有这里要从availableTargetNames中匹配真实表
         ArrayList<String> availableTargetNameList = new ArrayList<>(collection);
         String logicTableName = availableTargetNameList.get(0).replaceAll("[^(a-zA-Z_)]", "");
-        SortedMap<Long, String> tableHashNode =
-                initTableNodesToHashLoop.getTableVirtualNodes().get(logicTableName);
-
+        SortedMap<Long, String> tableHashNode = initTableNodesToHashLoop.getTableVirtualNodes().get(logicTableName);
         ConsistenceHashUtil consistentHashAlgorithm = new ConsistenceHashUtil(tableHashNode, collection);
-
         return consistentHashAlgorithm.getTableNode(String.valueOf(preciseShardingValue.getValue()));
     }
 
@@ -53,8 +51,8 @@ public class ConsistenceHashAlgorithm implements RangeShardingAlgorithm<Long>, P
      */
     @Override
     public Collection<String> doSharding(Collection collection, RangeShardingValue rangeShardingValue) {
-        System.out.println(collection);
-        System.out.println(rangeShardingValue);
+        System.out.println("doSharding2 ~ collection:" + collection);
+        System.out.println("doSharding2 ~ rangeShardingValue:" + rangeShardingValue);
         return collection;
     }
 }

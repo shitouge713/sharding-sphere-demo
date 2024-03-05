@@ -49,11 +49,9 @@ spring:
                             algorithm-expression: ds$->{id % 2}
                     #拆表策略
                     table-strategy:
-                        inline:
-                            # 分片键为ID
-                            sharding-column: id
-                            # 分片策略取模
-                            algorithm-expression: sys_user$->{id % 3}
+                        standard:
+                            shardingColumn: id
+                            preciseAlgorithmClassName: com.study.shardingjdbc.shard.ConsistenceHashAlgorithm
                 t_role: #单库单表
                     actualDataNodes: ds0.t_role
 
