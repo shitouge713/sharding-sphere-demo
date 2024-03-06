@@ -4,21 +4,23 @@ import lombok.Getter;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
  * 一致性哈希算法工具类
- * 使用FNV1_32_HASH算法计算key的Hash值
- * 也可以使用 MurmurHash3 或者别的加密方式
+ * 使用FNV1_32_HASH算法/MurmurHash3算法/其他算法计算key的Hash值
+ *
  * @author sxl
  * @Date 2024/3/5
  */
 public class ConsistenceHashUtil {
-    //存储所有节点，按照hash值排序的
+
+    private static String preFix = "-manji";
+    //存储所有节点，按照hash值排序的，使用treeMap，key为hash值，value为节点
     @Getter
     private SortedMap<Long, String> virtualNodes = new TreeMap<>();
+
 
     // 设置虚拟节点的个数
     private static final int VIRTUAL_NODES = 3;
@@ -27,46 +29,72 @@ public class ConsistenceHashUtil {
     public ConsistenceHashUtil() {
     }
 
-    //virtualTableNodes 虚拟节点  tableNodes 真实节点
-    public ConsistenceHashUtil(SortedMap<Long, String> virtualTableNodes, Collection<String> tableNodes) {
-        if (Objects.isNull(virtualTableNodes)) {
-            virtualTableNodes = initNodesToHashLoop(tableNodes);
-        }
+    /**
+     * virtualTableNodes 传入的hash环节点
+     *
+     * @param virtualTableNodes
+     */
+    public ConsistenceHashUtil(SortedMap<Long, String> virtualTableNodes) {
         this.virtualNodes = virtualTableNodes;
     }
 
+    /**
+     * 只有真实节点的hash环
+     *
+     * @param tableNodes
+     * @return
+     */
+    public SortedMap<Long, String> realNodesToHashLoop(Collection<String> tableNodes) {
+        SortedMap<Long, String> virtualTableNodes = new TreeMap<>();
+        for (String node : tableNodes) {
+            long hash = getHash(node);
+            virtualTableNodes.put(hash, node);
+        }
+        System.out.println("realTableNodes:" + virtualTableNodes);
+        return virtualTableNodes;
+    }
+
+    /**
+     * 有虚拟节点的hash环
+     *
+     * @param tableNodes
+     * @return
+     */
     public SortedMap<Long, String> initNodesToHashLoop(Collection<String> tableNodes) {
         SortedMap<Long, String> virtualTableNodes = new TreeMap<>();
         for (String node : tableNodes) {
             for (int i = 0; i < VIRTUAL_NODES; i++) {
                 String s = String.valueOf(i);
-                String virtualNodeName = node + "-manji" + s;
+                String virtualNodeName = node + preFix + s;
+                //如果发现hash不是32位，可能是由于显示或输出格式的问题导致的
                 long hash = getHash(virtualNodeName);
-
                 virtualTableNodes.put(hash, virtualNodeName);
             }
         }
+        System.out.println("virtualTableNodes:" + virtualTableNodes);
         return virtualTableNodes;
     }
 
     /**
-     * 通过计算key的hash
-     * 计算映射的表节点
+     * 获取节点并映射成真实节点
      *
      * @param key
      * @return
      */
     public String getTableNode(String key) {
+        //获取临近的下一个节点
         String virtualNode = getVirtualTableNode(key);
-        //虚拟节点名称截取后获取真实节点
-        if (!StringUtils.isEmpty(virtualNode)) {
+        //如果是虚拟节点，虚拟节点映射成真实节点
+        if (!StringUtils.isEmpty(virtualNode) && virtualNode.contains(preFix)) {
             return virtualNode.substring(0, virtualNode.indexOf("-"));
+        } else if (!StringUtils.isEmpty(virtualNode)) {
+            return virtualNode;
         }
         return null;
     }
 
     /**
-     * 获取虚拟节点
+     * 获取数据key临近下一个hash环上的节点
      *
      * @param key
      * @return
@@ -91,8 +119,7 @@ public class ConsistenceHashUtil {
     }
 
     /**
-     * 使用FNV1_32_HASH算法计算key的Hash值
-     * 也可以使用 MurmurHash3 或者别的加密方式
+     * 使用FNV1_32_HASH算法/MurmurHash3算法计算key的Hash值
      *
      * @param key
      * @return

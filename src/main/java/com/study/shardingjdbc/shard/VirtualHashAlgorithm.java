@@ -4,8 +4,6 @@ import cn.hutool.extra.spring.SpringUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shardingsphere.api.sharding.standard.PreciseShardingAlgorithm;
 import org.apache.shardingsphere.api.sharding.standard.PreciseShardingValue;
-import org.apache.shardingsphere.api.sharding.standard.RangeShardingAlgorithm;
-import org.apache.shardingsphere.api.sharding.standard.RangeShardingValue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,22 +11,22 @@ import java.util.SortedMap;
 
 /**
  * 自定义哈希算法 + 虚拟节点实现数据分片
+ * PreciseShardingAlgorithm，精确分片算法
  *
  * @author sxl
  * @Date 2024/3/5
  */
-public class ConsistenceHashAlgorithm implements RangeShardingAlgorithm<Long>, PreciseShardingAlgorithm<Long> {
+public class VirtualHashAlgorithm implements PreciseShardingAlgorithm<Long> {
 
     /**
      * @param collection           collection 配置文件中解析到的所有分片节点
-     * @param preciseShardingValue 解析到的sql值
+     * @param preciseShardingValue 解析到的sql值 ，哪个表，哪个字段，值是多少，根据该值去计算路由
      * @return
      */
     @Override
     public String doSharding(Collection collection, PreciseShardingValue preciseShardingValue) {
-        System.out.println("doSharding1 ~ collection:" + collection);
         //获取hash环
-        InitTableNodesToHashLoop initTableNodesToHashLoop = SpringUtil.getBean(InitTableNodesToHashLoop.class);
+        VirtualNodesToHashLoop virtualNodesToHashLoop = SpringUtil.getBean(VirtualNodesToHashLoop.class);
         if (CollectionUtils.isEmpty(collection)) {
             return preciseShardingValue.getLogicTableName();
         }
@@ -37,22 +35,11 @@ public class ConsistenceHashAlgorithm implements RangeShardingAlgorithm<Long>, P
         //但availableTargetNames中确是副表名称，所有这里要从availableTargetNames中匹配真实表
         ArrayList<String> availableTargetNameList = new ArrayList<>(collection);
         String logicTableName = availableTargetNameList.get(0).replaceAll("[^(a-zA-Z_)]", "");
-        SortedMap<Long, String> tableHashNode = initTableNodesToHashLoop.getTableVirtualNodes().get(logicTableName);
-        ConsistenceHashUtil consistentHashAlgorithm = new ConsistenceHashUtil(tableHashNode, collection);
-        return consistentHashAlgorithm.getTableNode(String.valueOf(preciseShardingValue.getValue()));
-    }
-
-    /**
-     * 范围查找时需要用到改分片算法，这里暂不完善了
-     *
-     * @param collection
-     * @param rangeShardingValue
-     * @return
-     */
-    @Override
-    public Collection<String> doSharding(Collection collection, RangeShardingValue rangeShardingValue) {
-        System.out.println("doSharding2 ~ collection:" + collection);
-        System.out.println("doSharding2 ~ rangeShardingValue:" + rangeShardingValue);
-        return collection;
+        //获取数据表对应的hash环上的节点
+        SortedMap<Long, String> tableHashNode = virtualNodesToHashLoop.getTableVirtualNodes().get(logicTableName);
+        ConsistenceHashUtil consistentHashAlgorithm = new ConsistenceHashUtil(tableHashNode);
+        //根据key，计算出该条数据对应的节点
+        String realNode = consistentHashAlgorithm.getTableNode(String.valueOf(preciseShardingValue.getValue()));
+        return realNode;
     }
 }

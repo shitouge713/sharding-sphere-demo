@@ -6,7 +6,6 @@ import org.apache.shardingsphere.core.rule.DataNode;
 import org.apache.shardingsphere.core.rule.ShardingRule;
 import org.apache.shardingsphere.core.rule.TableRule;
 import org.apache.shardingsphere.shardingjdbc.jdbc.core.datasource.ShardingDataSource;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -17,20 +16,21 @@ import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 /**
- * 初始化hash环
+ * 不包含虚拟节点的hash环
  *
  * @author sxl
  * @Date 2024/3/5
  */
 @Slf4j
 @Component
-@Lazy
-public class InitTableNodesToHashLoop {
+//@Lazy
+public class NodesToHashLoop {
     @Resource
     private ShardingDataSource shardingDataSource;
 
+    //key:table表，value：对应的hash环上的所有节点
     @Getter
-    private HashMap<String, SortedMap<Long, String>> tableVirtualNodes = new HashMap<>();
+    private HashMap<String, SortedMap<Long, String>> tableRealNodes = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -40,15 +40,15 @@ public class InitTableNodesToHashLoop {
             ConsistenceHashUtil consistenceHashUtil = new ConsistenceHashUtil();
             for (TableRule tableRule : tableRules) {
                 String logicTable = tableRule.getLogicTable();
-                tableVirtualNodes.put(logicTable,
-                        consistenceHashUtil.initNodesToHashLoop(
+                tableRealNodes.put(logicTable,
+                        consistenceHashUtil.realNodesToHashLoop(
                                 tableRule.getActualDataNodes()
                                         .stream()
                                         .map(DataNode::getTableName)
                                         .collect(Collectors.toList()))
                 );
             }
-            System.out.println("tableVirtualNodes:" + tableVirtualNodes);
+            System.out.println("tableRealNodes:" + tableRealNodes);
         } catch (Exception e) {
             log.error("分表节点初始化失败 {}", e);
         }
