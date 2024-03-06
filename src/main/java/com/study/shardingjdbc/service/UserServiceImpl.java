@@ -37,10 +37,9 @@ public class UserServiceImpl implements UserService {
     public void insert(SysUser sysUser) {
         for (int i = 21; i < 31; i++) {
             SysUser user = new SysUser();
-            user.setId(i);
             user.setName("测试" + i);
             System.out.println("i的值："+i);
-            userDao.insert(user);
+            userDao.insertZdy(user);
         }
     }
 
@@ -116,7 +115,7 @@ public class UserServiceImpl implements UserService {
             threadPoolExecutor.submit(() -> {
                 SysUser sysUser = new SysUser();
                 sysUser.setName("Test" + idx);
-                userDao.insert(sysUser);
+                userDao.insertZdy(sysUser);
             });
         }
         return size;

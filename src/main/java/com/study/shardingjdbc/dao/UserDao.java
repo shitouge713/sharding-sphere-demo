@@ -4,8 +4,11 @@
  */
 package com.study.shardingjdbc.dao;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.study.shardingjdbc.entity.BaseQueryBean;
+import com.study.shardingjdbc.entity.Cart;
 import com.study.shardingjdbc.entity.SysUser;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -14,14 +17,15 @@ import java.util.List;
  * @author: susu
  */
 @Mapper
-public interface UserDao {
+public interface UserDao extends BaseMapper<SysUser> {
 
     /**
      * 新增
      *
      * @param sysUser
      */
-    void insert(SysUser sysUser);
+    @Insert("insert into sys_user (name) values (#{name})")
+    void insertZdy(SysUser sysUser);
 
     /**
      * 更新

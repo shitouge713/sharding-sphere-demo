@@ -33,7 +33,7 @@ spring:
                     #拆表策略
                     table-strategy:
                         standard:
-                            shardingColumn: id
+                            shardingColumn: name
                             preciseAlgorithmClassName: com.study.shardingjdbc.shard.VirtualHashAlgorithm
                 o_cart:
                     # 数据节点：数据源$ ->{0..N}.逻辑表名$->{0..N}
