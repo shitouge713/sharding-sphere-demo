@@ -1,6 +1,6 @@
 package com.study.shardingjdbc.dto;
 
-import com.study.shardingjdbc.suanfa.Snowflake;
+import com.study.shardingjdbc.suanfa.Snowflake64;
 import lombok.Data;
 
 /**
@@ -13,7 +13,7 @@ public class UpdateCartParams {
 
     public static void main(String[] args) {
         System.out.println(System.currentTimeMillis());
-        Snowflake snowflake = new Snowflake();
+        Snowflake64 snowflake = new Snowflake64();
         for (int i = 0; i < 3; i++) {
             String snowflakeNextId = snowflake.nextIdStr();
             System.out.println(snowflakeNextId);

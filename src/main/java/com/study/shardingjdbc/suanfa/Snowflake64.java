@@ -6,12 +6,13 @@ import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Twitter的Snowflake算法
+ * Twitter的Snowflake算法（默认）
  * 符号位（1bit）- 时间戳相对值（41bit）- 数据中心标志（5bit）- 机器标志（5bit）- 递增序号（12bit）
  * 0 - 0000000000 0000000000 0000000000 0000000000 0 - 00000 - 00000 - 000000000000
  * 第一位为未使用(符号位表示正数)，接下来的41位为毫秒级时间(41位的长度可以使用69年)
@@ -24,12 +25,14 @@ import java.util.Date;
  * @author Looly
  * @since 3.0.1
  */
-public class Snowflake implements Serializable {
+@Slf4j
+public class Snowflake64 implements Serializable {
 	private static final long serialVersionUID = 1L;
 	/**
 	 * 默认的起始时间，为Thu, 04 Nov 2010 01:42:54 GMT
+	 * 1288834974657L
 	 */
-	public static long DEFAULT_TWEPOCH = 1709887227798L;
+	public static long DEFAULT_TWEPOCH = 1288834974657L;
 	/**
 	 * 默认回拨时间，2S
 	 */
@@ -82,7 +85,7 @@ public class Snowflake implements Serializable {
 	/**
 	 * 构造，使用自动生成的工作节点ID和数据中心ID
 	 */
-	public Snowflake() {
+	public Snowflake64() {
 		this(IdUtil.getWorkerId(IdUtil.getDataCenterId(MAX_DATA_CENTER_ID), MAX_WORKER_ID));
 	}
 
@@ -91,7 +94,7 @@ public class Snowflake implements Serializable {
 	 *
 	 * @param workerId 终端ID
 	 */
-	public Snowflake(long workerId) {
+	public Snowflake64(long workerId) {
 		this(workerId, IdUtil.getDataCenterId(MAX_DATA_CENTER_ID));
 	}
 
@@ -101,7 +104,7 @@ public class Snowflake implements Serializable {
 	 * @param workerId     终端ID
 	 * @param dataCenterId 数据中心ID
 	 */
-	public Snowflake(long workerId, long dataCenterId) {
+	public Snowflake64(long workerId, long dataCenterId) {
 		this(workerId, dataCenterId, false);
 	}
 
@@ -112,7 +115,7 @@ public class Snowflake implements Serializable {
 	 * @param dataCenterId     数据中心ID
 	 * @param isUseSystemClock 是否使用{@link SystemClock} 获取当前时间戳
 	 */
-	public Snowflake(long workerId, long dataCenterId, boolean isUseSystemClock) {
+	public Snowflake64(long workerId, long dataCenterId, boolean isUseSystemClock) {
 		this(null, workerId, dataCenterId, isUseSystemClock);
 	}
 
@@ -123,7 +126,7 @@ public class Snowflake implements Serializable {
 	 * @param isUseSystemClock 是否使用{@link SystemClock} 获取当前时间戳
 	 * @since 5.1.3
 	 */
-	public Snowflake(Date epochDate, long workerId, long dataCenterId, boolean isUseSystemClock) {
+	public Snowflake64(Date epochDate, long workerId, long dataCenterId, boolean isUseSystemClock) {
 		this(epochDate, workerId, dataCenterId, isUseSystemClock, DEFAULT_TIME_OFFSET);
 	}
 
@@ -135,7 +138,7 @@ public class Snowflake implements Serializable {
 	 * @param timeOffset       允许时间回拨的毫秒数
 	 * @since 5.8.0
 	 */
-	public Snowflake(Date epochDate, long workerId, long dataCenterId, boolean isUseSystemClock, long timeOffset) {
+	public Snowflake64(Date epochDate, long workerId, long dataCenterId, boolean isUseSystemClock, long timeOffset) {
 		this(epochDate, workerId, dataCenterId, isUseSystemClock, timeOffset, 0);
 	}
 
@@ -148,8 +151,8 @@ public class Snowflake implements Serializable {
 	 * @param randomSequenceLimit 限定一个随机上限，在不同毫秒下生成序号时，给定一个随机数，避免偶数问题，0表示无随机，上限不包括值本身。
 	 * @since 5.8.0
 	 */
-	public Snowflake(Date epochDate, long workerId, long dataCenterId,
-                     boolean isUseSystemClock, long timeOffset, long randomSequenceLimit) {
+	public Snowflake64(Date epochDate, long workerId, long dataCenterId,
+					   boolean isUseSystemClock, long timeOffset, long randomSequenceLimit) {
 		this.twepoch = (null != epochDate) ? epochDate.getTime() : DEFAULT_TWEPOCH;
 		this.workerId = Assert.checkBetween(workerId, 0, MAX_WORKER_ID);
 		this.dataCenterId = Assert.checkBetween(dataCenterId, 0, MAX_DATA_CENTER_ID);
@@ -240,6 +243,10 @@ public class Snowflake implements Serializable {
 		}
 
 		if (timestamp == this.lastTimestamp) {
+			/**
+			 * 该操作当sequence = 4096时，sequence重置为0，防止自增序号超过4096
+			 * 到达4096后，会while等待到下一个时间
+			 */
 			final long sequence = (this.sequence + 1) & SEQUENCE_MASK;
 			if (sequence == 0) {
 				timestamp = tilNextMillis(lastTimestamp);
@@ -256,6 +263,19 @@ public class Snowflake implements Serializable {
 
 		lastTimestamp = timestamp;
 
+		log.debug("timestamp:"+timestamp );
+		log.debug("timestamp-0L,二进制:"+Long.toBinaryString(timestamp - 0L) );
+		log.debug("timestamp-1288834974657L,二进制:"+Long.toBinaryString(timestamp - twepoch) );
+		log.debug("twepoch:"+twepoch );
+		log.debug("SEQUENCE_BITS:"+SEQUENCE_BITS);
+		log.debug("WORKER_ID_BITS:"+WORKER_ID_BITS);
+		log.debug("DATA_CENTER_ID_BITS:"+DATA_CENTER_ID_BITS);
+		log.debug("TIMESTAMP_LEFT_SHIFT:"+ TIMESTAMP_LEFT_SHIFT);
+		log.debug("dataCenterId:"+ dataCenterId);
+		log.debug("DATA_CENTER_ID_SHIFT:"+ DATA_CENTER_ID_SHIFT);
+		log.debug("workerId:"+ workerId);
+		log.debug("WORKER_ID_SHIFT:"+ WORKER_ID_SHIFT);
+		log.debug("sequence:"+sequence);
 		return ((timestamp - twepoch) << TIMESTAMP_LEFT_SHIFT)
 				| (dataCenterId << DATA_CENTER_ID_SHIFT)
 				| (workerId << WORKER_ID_SHIFT)

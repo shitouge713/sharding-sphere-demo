@@ -23,7 +23,7 @@ public class ConsistenceHashUtil {
 
 
     // 设置虚拟节点的个数
-    private static final int VIRTUAL_NODES = 3;
+    private static final int VIRTUAL_NODES = 100;
 
 
     public ConsistenceHashUtil() {
