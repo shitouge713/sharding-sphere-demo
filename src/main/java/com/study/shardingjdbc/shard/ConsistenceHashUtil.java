@@ -1,5 +1,6 @@
 package com.study.shardingjdbc.shard;
 
+import com.fasterxml.jackson.databind.ser.std.ByteArraySerializer;
 import lombok.Getter;
 import org.springframework.util.StringUtils;
 
@@ -141,6 +142,10 @@ public class ConsistenceHashUtil {
         return hash;
     }
 
+    /**
+     * 按key拆分策略
+     * @param args
+     */
     public static void main(String[] args) {
         String[] arr = new String[]{"OA04240314061600006101","OA04240314061600006202","OA04240314061600006303","OA04240314061600006501",
                 "OA04240314061600006602","OA04240314061600006703"};
@@ -148,11 +153,11 @@ public class ConsistenceHashUtil {
         for (int i = 0; i < arr.length; i++) {
             //System.out.println(%3);
             ByteArraySerializer keySerializer = new ByteArraySerializer();
-            String arrStr = String.valueOf(util.getHash(arr[i]));
+            /*String arrStr = String.valueOf(util.getHash(arr[i]));
             byte[] keyBytes1 = keySerializer.serialize("device", null, arrStr.getBytes());
             int i1 = Utils.toPositive(Utils.murmur2(keyBytes1)) % 3;
             System.out.println(arrStr+","+i1+","+keyBytes1);
-            /*byte[] keyBytes2 = keySerializer.serialize("device", null, arr[i].getBytes());
+            byte[] keyBytes2 = keySerializer.serialize("device", null, arr[i].getBytes());
             int i2 = Utils.toPositive(Utils.murmur2(keyBytes2)) % 3;
             System.out.println(arr[i]+","+i2+","+keyBytes2);*/
         }
